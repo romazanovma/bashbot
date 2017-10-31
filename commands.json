@@ -1,0 +1,10 @@
+{
+    commands:[{
+        name: "echo",
+        command: "echo 'hello'"
+    },
+    {
+        name: "hi"
+        command: "echo 'hi'"
+    }]
+}

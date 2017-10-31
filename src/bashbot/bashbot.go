@@ -5,7 +5,18 @@ import (
     "os/exec"
     "log"
     "github.com/go-telegram-bot-api/telegram-bot-api"
+    "encoding/json"
+    "io/ioutil"
 )
+
+type Commands struct {
+    Cmds []Command `json:"commands"`
+}
+
+type Command struct {
+    Name string `json:"name"`
+    Cmd string `json:"command"`
+}
 
 
 func main() {
@@ -15,6 +26,14 @@ func main() {
     }
     log.Printf("Connected to bot API")
 
+    commandsFileName := env("COMMANDS_FILE", "commands.json")
+    file, err := ioutil.ReadFile(commandsFileName)
+    if err != nil {
+        log.Panic(err)
+    }
+    var commands Commands
+    err = json.Unmarshal(file, &commands)
+
     updateConfiguration := tgbotapi.NewUpdate(0)
     updateConfiguration.Timeout = 60
 
@@ -23,9 +42,16 @@ func main() {
 		if update.Message == nil {
 			continue
 		}
-
-        chatName := strings.TrimSpace(update.Message.Chat.Title)
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
+        if update.Message.IsCommand() {
+            for _, command := range commands.Cmds {
+                if command.Name == update.Message.Command() {
+                    out, _ := exec.Command("sh", "-c", command.Cmd).Output()
+                    msg := tgbotapi.NewMessage(update.Message.Chat.ID, string(out))
+                    msg.ReplyToMessageID = update.Message.MessageID
+                    bot.Send(msg)
+                }
+            }
+        }
 	}
 }
 
