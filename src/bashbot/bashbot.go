@@ -9,6 +9,7 @@ import (
 )
 
 //some changes here
+//some more changes
 
 type Commands struct {
 	Cmds []Command `json:"commands"`
@@ -18,8 +19,6 @@ type Command struct {
 	Name string `json:"name"`
 	Cmd  string `json:"command"`
 }
-
-//some changes there
 
 func main() {
 	bot, err := tgbotapi.NewBotAPI(env("TELEGRAM_BOT_TOKEN", ""))
